@@ -1,0 +1,27 @@
+---
+- name: Configure Kijani Staging Environment
+  hosts: localhost
+  connection: local
+  tasks:
+    - name: Create a test deployment in staging
+      kubernetes.core.k8s:
+        state: present
+        namespace: kijani-staging
+        definition:
+          apiVersion: apps/v1
+          kind: Deployment
+          metadata:
+            name: kk-payments-test
+          spec:
+            replicas: 1
+            selector:
+              matchLabels:
+                app: kk-payments-test
+            template:
+              metadata:
+                labels:
+                  app: kk-payments-test
+              spec:
+                containers:
+                - name: nginx
+                  image: nginx:latest
