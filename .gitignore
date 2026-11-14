@@ -1,0 +1,25 @@
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+
+# Environment variables and secrets
+.env
+.env.*
+*.pem
+kubeconfig
+
+# Python
+venv/
+.venv/
+__pycache__/
+*.py[cod]
+
+# Node.js
+node_modules/
+npm-debug.log*
+
+# Generated files
+dist/
+.DS_Store

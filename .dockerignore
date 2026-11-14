@@ -1,0 +1,12 @@
+.git
+**/node_modules
+.venv
+venv
+**/.env
+.env*
+.npmrc
+*.log
+dist
+terraform/.terraform
+terraform/terraform.tfstate
+terraform/terraform.tfstate.backup

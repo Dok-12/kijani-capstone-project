@@ -11,7 +11,8 @@ kk-payments currently deploys to a single environment (default namespace). There
 - Component 5: The Week 10 serverless receipt chain integrated with the staging environment.
 
 ## What Is Out of Scope
-- Item 1: Multi-cloud deployment (Focusing only on the local Minikube cluster for speed).
+- Item 1: Real cloud deployment: the whole system runs on local Minikube, to
+  stay within free-tier and time limits.
 - Item 2: Automated rollback to production (Focusing only on the staging validation pipeline for this iteration).
 
 ## Success Criteria

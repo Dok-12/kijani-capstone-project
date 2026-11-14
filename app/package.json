@@ -1,0 +1,20 @@
+{
+  "name": "kijanikiosk-payments",
+  "version": "1.0.0",
+  "description": "KijaniKiosk payments API for the Track A infrastructure-first capstone",
+  "main": "src/index.js",
+  "scripts": {
+    "lint": "node --check src/index.js && node --check src/server.js && node --check test/payments.test.js",
+    "test": "node --test",
+    "build": "mkdir -p dist && npm pack --pack-destination dist",
+    "audit": "npm audit --audit-level=high"
+  },
+  "files": [
+    "src/",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "license": "UNLICENSED"
+}

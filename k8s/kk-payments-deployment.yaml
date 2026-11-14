@@ -16,28 +16,38 @@ spec:
     spec:
       containers:
       - name: kk-payments
-        image: nginx:alpine
+        image: kk-payments:capstone-1.0.0
+        imagePullPolicy: IfNotPresent
         ports:
-        - containerPort: 80
+        - name: http
+          containerPort: 3001
+          protocol: TCP
         envFrom:
         - configMapRef:
             name: kk-payments-config
         resources:
+          requests:
+            cpu: "100m"
+            memory: "64Mi"
           limits:
             cpu: "500m"
             memory: "128Mi"
-          requests:
-            cpu: "250m"
-            memory: "64Mi"
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 10001
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
         readinessProbe:
           httpGet:
-            path: /
-            port: 80
+            path: /health
+            port: http
           initialDelaySeconds: 5
           periodSeconds: 5
         livenessProbe:
           httpGet:
-            path: /
-            port: 80
+            path: /health
+            port: http
           initialDelaySeconds: 15
           periodSeconds: 10
