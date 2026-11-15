@@ -25,6 +25,19 @@ spec:
         envFrom:
         - configMapRef:
             name: kk-payments-config
+        env:
+        - name: AWS_ACCESS_KEY_ID
+          valueFrom:
+            secretKeyRef:
+              name: kk-payments-aws-credentials
+              key: AWS_ACCESS_KEY_ID
+              optional: true
+        - name: AWS_SECRET_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              name: kk-payments-aws-credentials
+              key: AWS_SECRET_ACCESS_KEY
+              optional: true
         resources:
           requests:
             cpu: "100m"

@@ -5,3 +5,5 @@ metadata:
 data:
   DB_HOST: "staging-db.kijani.local"
   ENV: "staging"
+  AWS_REGION: "eu-north-1"
+  RECEIPTS_BUCKET: "kk-payments-receipts-staging1"

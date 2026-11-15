@@ -1,7 +1,9 @@
+
 'use strict';
 
 const http = require('node:http');
 const { calculateTotal } = require('./index');
+const { uploadReceipt } = require('./receipts');
 const { version } = require('../package.json');
 const { recordRequest, renderMetrics } = require('./metrics');
 
@@ -45,21 +47,47 @@ const server = http.createServer((req, res) => {
       }
     });
 
-    req.on('end', () => {
-      try {
-        const payment = JSON.parse(body);
-        const total = calculateTotal(payment.amount, payment.fee || 0);
+    req.on('end', async () => {
+      let payment;
+      let total;
 
-        return respond(
-          200,
-          'application/json',
-          JSON.stringify({ total, version })
-        );
+      try {
+        payment = JSON.parse(body);
+        total = calculateTotal(payment.amount, payment.fee || 0);
       } catch (error) {
         return respond(
           400,
           'application/json',
           JSON.stringify({ error: error.message })
+        );
+      }
+
+      try {
+        const receipt = await uploadReceipt(payment, total);
+
+        return respond(
+          200,
+          'application/json',
+          JSON.stringify({
+            total,
+            version,
+            receipt: receipt
+              ? {
+                  receiptId: receipt.receiptId,
+                  status: receipt.status
+                }
+              : null
+          })
+        );
+      } catch (error) {
+        console.error('Receipt upload failed:', error);
+
+        return respond(
+          503,
+          'application/json',
+          JSON.stringify({
+            error: 'Receipt upload failed. Please retry.'
+          })
         );
       }
     });
