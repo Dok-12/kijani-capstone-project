@@ -3,17 +3,35 @@
 const http = require('node:http');
 const { calculateTotal } = require('./index');
 const { version } = require('../package.json');
+const { recordRequest, renderMetrics } = require('./metrics');
 
 const PORT = Number(process.env.PORT || 3001);
 
 const server = http.createServer((req, res) => {
-  if (req.method === 'GET' && req.url === '/health') {
-    res.writeHead(200, { 'Content-Type': 'application/json' });
+  const route = ['/health', '/payments', '/metrics'].includes(req.url)
+    ? req.url
+    : '/not-found';
 
-    return res.end(JSON.stringify({
-      status: 'healthy',
-      version
-    }));
+  function respond(status, contentType, body) {
+    recordRequest(req.method, route, status);
+    res.writeHead(status, { 'Content-Type': contentType });
+    res.end(body);
+  }
+
+  if (req.method === 'GET' && req.url === '/metrics') {
+    return respond(
+      200,
+      'text/plain; version=0.0.4; charset=utf-8',
+      renderMetrics()
+    );
+  }
+
+  if (req.method === 'GET' && req.url === '/health') {
+    return respond(
+      200,
+      'application/json',
+      JSON.stringify({ status: 'healthy', version })
+    );
   }
 
   if (req.method === 'POST' && req.url === '/payments') {
@@ -32,29 +50,28 @@ const server = http.createServer((req, res) => {
         const payment = JSON.parse(body);
         const total = calculateTotal(payment.amount, payment.fee || 0);
 
-        res.writeHead(200, { 'Content-Type': 'application/json' });
-
-        res.end(JSON.stringify({
-          total,
-          version
-        }));
+        return respond(
+          200,
+          'application/json',
+          JSON.stringify({ total, version })
+        );
       } catch (error) {
-        res.writeHead(400, { 'Content-Type': 'application/json' });
-
-        res.end(JSON.stringify({
-          error: error.message
-        }));
+        return respond(
+          400,
+          'application/json',
+          JSON.stringify({ error: error.message })
+        );
       }
     });
 
     return;
   }
 
-  res.writeHead(404, { 'Content-Type': 'application/json' });
-
-  res.end(JSON.stringify({
-    error: 'Not found'
-  }));
+  return respond(
+    404,
+    'application/json',
+    JSON.stringify({ error: 'Not found' })
+  );
 });
 
 server.listen(PORT, '0.0.0.0', () => {

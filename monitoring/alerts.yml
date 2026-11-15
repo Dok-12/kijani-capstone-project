@@ -1,11 +1,16 @@
 groups:
   - name: kijani-alerts
     rules:
-    - alert: KijaniPaymentsHighErrorRate
-      expr: rate(http_requests_total{status=~"5.."}[2m]) > 0.05
-      for: 2m
-      labels:
-        severity: critical
-      annotations:
-        summary: "High error rate on kk-payments"
-        description: "Error rate is over 5% for more than 2 minutes."
+      - alert: KijaniPaymentsHighErrorRate
+        expr: |
+          (
+            sum(rate(http_requests_total{job="kk-payments",status=~"5.."}[2m]))
+            /
+            sum(rate(http_requests_total{job="kk-payments"}[2m]))
+          ) > 0.05
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High error rate on kk-payments"
+          description: "The kk-payments HTTP 5xx error rate has exceeded 5% for at least 2 minutes."
