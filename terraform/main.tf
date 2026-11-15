@@ -34,3 +34,28 @@ resource "kubernetes_config_map_v1" "staging_config" {
     ENV     = "staging"
   }
 }
+
+# Production namespace
+resource "kubernetes_namespace_v1" "production" {
+  metadata {
+    name = "kijani-production"
+
+    labels = {
+      environment = "production"
+      managed_by  = "terraform"
+    }
+  }
+}
+
+# Production payments configuration
+resource "kubernetes_config_map_v1" "production_config" {
+  metadata {
+    name      = "kk-payments-config"
+    namespace = kubernetes_namespace_v1.production.metadata[0].name
+  }
+
+  data = {
+    DB_HOST = "production-db.kijani.local"
+    ENV     = "production"
+  }
+}
