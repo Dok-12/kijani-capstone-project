@@ -292,17 +292,12 @@ users:
     token: ${K8S_TOKEN}
 EOF
 
-                        kubectl apply \
-                          -f k8s/kk-payments-deployment.yaml \
-                          -n "$PROD_NS"
+                        sed "s|image: kk-payments:capstone-1.0.0|image: $FULL_IMAGE|" \
+                          k8s/kk-payments-deployment.yaml |
+                          kubectl apply -f - -n "$PROD_NS"
 
                         kubectl apply \
                           -f k8s/kk-payments-service.yaml \
-                          -n "$PROD_NS"
-
-                        kubectl set image \
-                          deployment/kk-payments \
-                          kk-payments="$FULL_IMAGE" \
                           -n "$PROD_NS"
 
                         kubectl rollout status \
