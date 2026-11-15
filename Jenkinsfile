@@ -307,6 +307,94 @@ EOF
                     '''
                 }
             }
+
+        }
+
+        stage('Production Smoke Test') {
+            when {
+                expression {
+                    env.BRANCH_NAME == 'main' || env.GIT_BRANCH == 'origin/main'
+                }
+            }
+            steps {
+                echo 'Testing the production payments API...'
+                withCredentials([
+                    string(
+                        credentialsId: 'kubernetes-jenkins-token',
+                        variable: 'K8S_TOKEN'
+                    )
+                ]) {
+                    sh '''
+                        set -eu
+                        set +x
+                        umask 077
+
+                        export KUBECONFIG="$(mktemp)"
+                        PF_PID=""
+
+                        cleanup() {
+                            if [ -n "$PF_PID" ]; then
+                                kill "$PF_PID" 2>/dev/null || true
+                            fi
+                            rm -f "$KUBECONFIG"
+                        }
+                        trap cleanup EXIT
+
+                        cat > "$KUBECONFIG" <<EOF
+apiVersion: v1
+kind: Config
+clusters:
+- cluster:
+    certificate-authority: ${K8S_CA}
+    server: ${K8S_SERVER}
+  name: minikube
+contexts:
+- context:
+    cluster: minikube
+    user: jenkins
+    namespace: ${PROD_NS}
+  name: jenkins-context
+current-context: jenkins-context
+users:
+- name: jenkins
+  user:
+    token: ${K8S_TOKEN}
+EOF
+
+                        kubectl port-forward \
+                          service/kk-payments 18081:80 \
+                          -n "$PROD_NS" >/tmp/kk-payments-prod-port-forward.log 2>&1 &
+                        PF_PID=$!
+
+                        READY=false
+                        for i in $(seq 1 20); do
+                            if curl -fsS http://127.0.0.1:18081/health >/dev/null; then
+                                READY=true
+                                break
+                            fi
+                            sleep 2
+                        done
+
+                        if [ "$READY" != true ]; then
+                            cat /tmp/kk-payments-prod-port-forward.log
+                            echo "Production health check failed."
+                            exit 1
+                        fi
+
+                        echo "Production health check passed."
+
+                        RESPONSE=$(curl -fsS \
+                          -X POST http://127.0.0.1:18081/payments \
+                          -H "Content-Type: application/json" \
+                          -d '{"amount":1000,"fee":50}')
+
+                        echo "Payment test response: $RESPONSE"
+                        echo "$RESPONSE" | grep -q '"total":1050'
+
+                        echo "Production payment smoke test passed."
+                    '''
+                }
+            }
         }
     }
 }
