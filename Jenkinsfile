@@ -114,15 +114,6 @@ pipeline {
                     )
                 ]) {
                     sh '''
-                        echo "Checking Kubernetes access..."
-                        kubectl get deployments -n "$STAGING_NS"
-
-                        echo "Checking staging permissions..."
-                        kubectl auth can-i create configmaps -n "$STAGING_NS"
-                        kubectl auth can-i patch configmaps -n "$STAGING_NS"
-                        kubectl auth can-i create deployments -n "$STAGING_NS"
-                        kubectl auth can-i patch deployments -n "$STAGING_NS"
-                        kubectl auth can-i create services -n "$STAGING_NS"
                         set +x
                         umask 077
                         export KUBECONFIG="$(mktemp)"
@@ -148,7 +139,15 @@ users:
   user:
     token: ${K8S_TOKEN}
 EOF
+                echo "Checking Kubernetes access..."
+                kubectl get deployments -n "$STAGING_NS"
 
+                echo "Checking staging permissions..."
+                kubectl auth can-i create configmaps -n "$STAGING_NS"
+                kubectl auth can-i patch configmaps -n "$STAGING_NS"
+                kubectl auth can-i create deployments -n "$STAGING_NS"
+                kubectl auth can-i patch deployments -n "$STAGING_NS"
+                kubectl auth can-i create services -n "$STAGING_NS"
                         kubectl apply \
                           -f k8s/kk-payments-configmap.yaml \
                           -n "$STAGING_NS"
