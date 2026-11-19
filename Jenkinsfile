@@ -114,6 +114,15 @@ pipeline {
                     )
                 ]) {
                     sh '''
+                        echo "Checking Kubernetes identity..."
+                        kubectl auth whoami
+
+                        echo "Checking staging permissions..."
+                        kubectl auth can-i create configmaps -n "$STAGING_NS"
+                        kubectl auth can-i patch configmaps -n "$STAGING_NS"
+                        kubectl auth can-i create deployments -n "$STAGING_NS"
+                        kubectl auth can-i patch deployments -n "$STAGING_NS"
+                        kubectl auth can-i create services -n "$STAGING_NS"
                         set +x
                         umask 077
                         export KUBECONFIG="$(mktemp)"
