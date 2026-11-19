@@ -4,7 +4,7 @@
   "description": "KijaniKiosk payments API for the Track A infrastructure-first capstone",
   "main": "src/index.js",
   "scripts": {
-    "lint": "node --check src/index.js && node --check src/server.js && node --check src/metrics.js && node --check test/payments.test.js",
+    "lint": "node --check src/index.js && node --check src/server.js && node --check src/metrics.js && node --check src/receipts.js && node --check test/payments.test.js",
     "test": "node --test",
     "build": "mkdir -p dist && npm pack --pack-destination dist",
     "audit": "npm audit --audit-level=high"

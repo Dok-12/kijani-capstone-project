@@ -141,6 +141,10 @@ users:
 EOF
 
                         kubectl apply \
+                          -f k8s/kk-payments-configmap.yaml \
+                          -n "$STAGING_NS"
+
+                        kubectl apply \
                           -f k8s/kk-payments-deployment.yaml \
                           -n "$STAGING_NS"
 
