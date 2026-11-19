@@ -114,8 +114,8 @@ pipeline {
                     )
                 ]) {
                     sh '''
-                        echo "Checking Kubernetes identity..."
-                        kubectl auth whoami
+                        echo "Checking Kubernetes access..."
+                        kubectl get deployments -n "$STAGING_NS"
 
                         echo "Checking staging permissions..."
                         kubectl auth can-i create configmaps -n "$STAGING_NS"
